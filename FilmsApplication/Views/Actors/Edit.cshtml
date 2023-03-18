@@ -1,0 +1,49 @@
+﻿@model FilmsApplication.Models.Actor
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Actor</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ActorId" />
+            <div class="form-group">
+                <label asp-for="ActorName" class="control-label"></label>
+                <input asp-for="ActorName" class="form-control" />
+                <span asp-validation-for="ActorName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ActorBirthDay" class="control-label"></label>
+                <input asp-for="ActorBirthDay" class="form-control" />
+                <span asp-validation-for="ActorBirthDay" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ActorDeathDay" class="control-label"></label>
+                <input asp-for="ActorDeathDay" class="form-control" />
+                <span asp-validation-for="ActorDeathDay" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ActorCountryId" class="control-label"></label>
+                <select asp-for="ActorCountryId" class="form-control" asp-items="ViewBag.ActorCountryId"></select>
+                <span asp-validation-for="ActorCountryId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
