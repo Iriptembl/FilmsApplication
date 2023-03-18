@@ -33,3 +33,26 @@
 }
     </tbody>
 </table>
+
+<div class="container">
+    <div id="chartcountry"></div>
+</div>
+@section scripts{
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+            $.get('/api/Chart/JsonDataCountry', function (JsonDataCountry) {
+                data = google.visualization.arrayToDataTable(JsonDataCountry, false);
+                var option = {
+                    title: "Proportion: actors to countries",
+                    width: 500,
+                    height: 400
+                };
+                chart = new google.visualization.PieChart(document.getElementById('chartcountry'));
+                chart.draw(data, option);
+            })
+        }
+    </script>
+}
