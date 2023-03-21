@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using FilmsApplication.Models;
 using System.Numerics;
+using ClosedXML.Excel;
 
 namespace FilmsApplication.Controllers
 {
@@ -171,6 +172,147 @@ namespace FilmsApplication.Controllers
         private bool CountryExists(int id)
         {
           return (_context.Countries?.Any(e => e.CountryId == id)).GetValueOrDefault();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Import(IFormFile fileExcel)    //IMPORT
+        {
+            if (ModelState.IsValid)
+            {
+                if (fileExcel != null)
+                {
+                    using (var stream = new FileStream(fileExcel.FileName, FileMode.Create))
+                    {
+                        await fileExcel.CopyToAsync(stream);
+                        using (XLWorkbook workbook = new XLWorkbook(stream))
+                        {
+                            foreach (IXLWorksheet worksheet in workbook.Worksheets)
+                            {
+                                Country newcountry;
+                                var c = (from ctry in _context.Countries
+                                         where ctry.CountryName.Contains(worksheet.Name)
+                                         select ctry).ToList();
+                                
+                                if (c.Count > 0)
+                                {
+                                    newcountry = c[0];
+                                }
+                                else
+                                {
+                                    newcountry = new Country();
+                                    newcountry.CountryName = worksheet.Name;
+                                    _context.Countries.Add(newcountry);
+                                }
+                                foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
+                                {
+                                    try
+                                    {
+                                        Models.Actor actor;
+                                        var ac = (from dep in _context.Actors where dep.ActorName.Contains(row.Cell(1).Value.ToString()) select dep).ToList();
+
+                                        if (ac.Count == 0)
+                                        {
+                                            actor = new Models.Actor();
+                                            actor.ActorName = row.Cell(1).Value.ToString();
+                                            actor.ActorBirthDay = row.Cell(2).Value;
+                                            actor.ActorDeathDay = row.Cell(3).Value;
+                                            actor.ActorCountry = newcountry;
+                                            _context.Actors.Add(actor);
+                                        }
+                                        else actor = ac[0];
+
+                                        for (int i = 4; i < 6; i++)
+                                        {
+                                            if(row.Cell(i).Value.ToString().Length > 0)
+                                            {
+                                                Film film;
+
+                                                var f = (from fil in _context.Films
+                                                         where fil.FilmName.Contains(row.Cell(i).Value.ToString()) 
+                                                         select fil).ToList();
+                                                if (f.Count > 0)
+                                                {
+                                                    film = f[0];
+                                                }
+                                                else
+                                                {
+                                                    film = new Film();
+                                                    film.FilmName = row.Cell(i).Value.ToString();
+                                                    film.FilmDateRelease = DateTime.Now;
+                                                    film.FilmRating = 0;
+                                                    _context.Add(film);
+                                                }
+                                                FilmActor fa = new FilmActor();
+                                                fa.Actor = actor;
+                                                fa.Film = film;
+                                                _context.FilmActors.Add(fa);
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine(ex.ToString());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        public ActionResult Export()
+        {
+            using (XLWorkbook workbook = new XLWorkbook())
+            {
+                var countries = _context.Countries.Include("Actors").ToList();
+
+                foreach (var c in countries)
+                {
+                    var worksheet = workbook.Worksheets.Add(c.CountryName);
+
+                    worksheet.Cell("A1").Value = "Name";
+                    worksheet.Cell("B1").Value = "Date of birth";
+                    worksheet.Cell("C1").Value = "Date of death";
+                    worksheet.Cell("D1").Value = "Film 1";
+                    worksheet.Cell("E1").Value = "Film 2";
+                    worksheet.Row(1).Style.Font.Bold = true;
+                    var actors = c.Actors.ToList();
+
+                    for (int i = 0; i < actors.Count; i++)
+                    {
+                        worksheet.Cell(i + 2, 1).Value = actors[i].ActorName;
+                        worksheet.Cell(i + 2, 2).Value = actors[i].ActorBirthDay;
+                        worksheet.Cell(i + 2, 3).Value = actors[i].ActorDeathDay;
+
+                        var fa = _context.FilmActors.Where(a => a.ActorId == actors[i].ActorId).Include("Film").ToList();
+
+                        int j = 0;
+                        foreach (var a in fa)
+                        {
+                            if(j < 2)
+                            {
+                                worksheet.Cell(i + 2, j + 4).Value = a.Film.FilmName;
+                                j++;
+                            }
+                        }
+                    }
+                }
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Flush();
+                    return new FileContentResult(stream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    {
+                        FileDownloadName = $"actors_{DateTime.UtcNow.ToShortDateString()}.xlsx"
+                    };
+
+                }
+            }
         }
     }
 }

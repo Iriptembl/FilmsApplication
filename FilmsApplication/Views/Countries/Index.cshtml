@@ -34,6 +34,27 @@
     </tbody>
 </table>
 
+<div>
+    <h3>Import *.xlsx | *.xls file</h3>
+    @using (Html.BeginForm("Import", "Countries", FormMethod.Post, new { enctype = "multipart/form-data", id = "frm-excel" }))
+    {
+        <div>
+            Import *xlsx file:
+            <input type="file" name="fileExcel" id="fileExcel" />
+            <div>
+                <input type="submit" value="Upload" />
+            </div>
+        </div>
+    }
+</div>
+
+<div>
+    <h3>Export to *xlsx</h3>
+    <a asp-action="Export">Export</a>
+</div>
+
+<hr />
+
 <div class="container">
     <div id="chartcountry"></div>
 </div>

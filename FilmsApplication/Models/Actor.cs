@@ -16,15 +16,19 @@ public partial class Actor
     [Required(ErrorMessage = "Can not be empty.")]
     [Display(Name = "Date of birth")]
     [BindProperty, DataType(DataType.Date)]
+    /*[Range(typeof(DateTime), "1/1/1900", "20/3/2023",
+        ErrorMessage = "Value for date of birth must be between {1} or {2}")]*/
     public DateTime ActorBirthDay { get; set; }
 
     [Display(Name = "Date of death")]
     [BindProperty, DataType(DataType.Date)]
+    /*[Range(typeof(DateTime), "1/1/1900", "20/3/2023",
+        ErrorMessage = "Value for date of death must be between {1} or {2}")]*/
     public DateTime? ActorDeathDay { get; set; }
     [Display(Name = "Country")]
     public int ActorCountryId { get; set; }
+    [Display(Name = "Country")]
 
-    
     public virtual Country ActorCountry { get; set; } = null!;
 
     public virtual ICollection<FilmActor> FilmActors { get; } = new List<FilmActor>();
