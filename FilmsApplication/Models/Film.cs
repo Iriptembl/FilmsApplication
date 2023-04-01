@@ -15,7 +15,8 @@ public partial class Film
 
     [Required(ErrorMessage = "Can not be empty.")]
     [Display(Name = "Release date")]
-    [BindProperty, DataType(DataType.Date)]
+    [DataType(DataType.Date)]
+    [DisplayFormat(DataFormatString = "{0:dd.MM.yyyy}", ApplyFormatInEditMode = true)]
     public DateTime FilmDateRelease { get; set; }
     
     [Range(1, 10,

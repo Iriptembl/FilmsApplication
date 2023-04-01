@@ -59,6 +59,18 @@ namespace FilmsApplication.Controllers
         {
             if (ModelState.IsValid)
             {
+
+                DateTime enteredDate = film.FilmDateRelease;
+                
+                DateTime startDate = new DateTime(1960, 1, 1);
+                DateTime endDate = new DateTime(2027, 1, 1);
+
+                if (enteredDate <= startDate || enteredDate >= endDate)
+                {
+                    ModelState.AddModelError("FilmDateRelease", "Not available value. Set in range: 01.01.1960 - today");
+                    return View(film);
+                }
+
                 _context.Add(film);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));

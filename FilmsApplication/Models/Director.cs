@@ -15,11 +15,13 @@ public partial class Director
 
     [Required(ErrorMessage = "Can not be empty.")]
     [Display(Name = "Date of birth")]
-    [BindProperty, DataType(DataType.Date)]
+    [DataType(DataType.Date)]
+    [DisplayFormat(DataFormatString = "{0:dd.MM.yyyy}", ApplyFormatInEditMode = true)]
     public DateTime DirectorBirthDay { get; set; }
 
     [Display(Name = "Date of death")]
-    [BindProperty, DataType(DataType.Date)]
+    [DataType(DataType.Date)]
+    [DisplayFormat(DataFormatString = "{0:dd.MM.yyyy}", ApplyFormatInEditMode = true)]
     public DateTime? DirectorDeathDay { get; set; }
 
     public virtual ICollection<FilmDirector> FilmDirectors { get; } = new List<FilmDirector>();

@@ -78,6 +78,25 @@ namespace FilmsApplication.Controllers
                     return View(existActorName);
                 }
 
+                DateTime enteredDate = actor.ActorBirthDay;
+                DateTime? enteredDate1 = actor.ActorDeathDay;
+                
+                DateTime startDate = new DateTime(1920, 1, 1);
+                DateTime endDate = DateTime.Now;
+
+                if (enteredDate <= startDate || enteredDate >= endDate)
+                {
+                    ModelState.AddModelError("ActorBirthDay", "Not available value. Set in range: 01.01.1920 - today");
+                    return View(actor);
+                }
+
+                if ((enteredDate1 <= enteredDate || enteredDate1 >= endDate) && enteredDate1 != null)
+                {
+                    ModelState.AddModelError("ActorDeathDay", "Not available value. Date should be after day of birth till today");
+                    return View(actor);
+                }
+
+
                 _context.Add(actor);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
