@@ -6,8 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using FilmsApplication.Models;
-using System.Numerics;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ClosedXML.Excel;
+using System.Drawing;
+using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Drawing;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 
 namespace FilmsApplication.Controllers
 {
@@ -23,9 +29,9 @@ namespace FilmsApplication.Controllers
         // GET: Countries
         public async Task<IActionResult> Index()
         {
-              return _context.Countries != null ? 
-                          View(await _context.Countries.ToListAsync()) :
-                          Problem("Entity set 'DbfilmsContext.Countries'  is null.");
+            return _context.Countries != null ?
+                        View(await _context.Countries.ToListAsync()) :
+                        Problem("Entity set 'DbfilmsContext.Countries'  is null.");
         }
 
         // GET: Countries/Details/5
@@ -171,12 +177,12 @@ namespace FilmsApplication.Controllers
 
         private bool CountryExists(int id)
         {
-          return (_context.Countries?.Any(e => e.CountryId == id)).GetValueOrDefault();
+            return (_context.Countries?.Any(e => e.CountryId == id)).GetValueOrDefault();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Import(IFormFile fileExcel)    //IMPORT
+        public async Task<IActionResult> Import(IFormFile fileExcel)
         {
             if (ModelState.IsValid)
             {
@@ -193,7 +199,7 @@ namespace FilmsApplication.Controllers
                                 var c = (from ctry in _context.Countries
                                          where ctry.CountryName.Contains(worksheet.Name)
                                          select ctry).ToList();
-                                
+
                                 if (c.Count > 0)
                                 {
                                     newcountry = c[0];
@@ -208,28 +214,35 @@ namespace FilmsApplication.Controllers
                                 {
                                     try
                                     {
-                                        Models.Actor actor;
+                                        Actor actor;
                                         var ac = (from dep in _context.Actors where dep.ActorName.Contains(row.Cell(1).Value.ToString()) select dep).ToList();
 
                                         if (ac.Count == 0)
                                         {
-                                            actor = new Models.Actor();
+                                            actor = new Actor();
                                             actor.ActorName = row.Cell(1).Value.ToString();
                                             actor.ActorBirthDay = row.Cell(2).Value;
-                                            actor.ActorDeathDay = row.Cell(3).Value;
+                                            if (row.Cell(3).Value.ToString() == "")
+                                            {
+                                                actor.ActorDeathDay = null;
+                                            }
+                                            else
+                                            {
+                                                actor.ActorDeathDay = row.Cell(3).Value;
+                                            }
                                             actor.ActorCountry = newcountry;
                                             _context.Actors.Add(actor);
                                         }
                                         else actor = ac[0];
 
-                                        for (int i = 4; i < 6; i++)
+                                        for (int i = 4; i < 100; i++)
                                         {
-                                            if(row.Cell(i).Value.ToString().Length > 0)
+                                            if (row.Cell(i).Value.ToString().Length > 0)
                                             {
                                                 Film film;
 
                                                 var f = (from fil in _context.Films
-                                                         where fil.FilmName.Contains(row.Cell(i).Value.ToString()) 
+                                                         where fil.FilmName.Contains(row.Cell(i).Value.ToString())
                                                          select fil).ToList();
                                                 if (f.Count > 0)
                                                 {
@@ -244,9 +257,16 @@ namespace FilmsApplication.Controllers
                                                     _context.Add(film);
                                                 }
                                                 FilmActor fa = new FilmActor();
-                                                fa.Actor = actor;
-                                                fa.Film = film;
-                                                _context.FilmActors.Add(fa);
+                                                var fActor = (from filmActor in _context.FilmActors
+                                                              where filmActor.Actor == actor
+                                                              where filmActor.Film == film
+                                                              select filmActor).FirstOrDefault();
+                                                if (fActor is null)
+                                                {
+                                                    fa.Actor = actor;
+                                                    fa.Film = film;
+                                                    _context.FilmActors.Add(fa);
+                                                }
                                             }
                                         }
                                     }
@@ -293,7 +313,7 @@ namespace FilmsApplication.Controllers
                         int j = 0;
                         foreach (var a in fa)
                         {
-                            if(j < 2)
+                            if (j < 2)
                             {
                                 worksheet.Cell(i + 2, j + 4).Value = a.Film.FilmName;
                                 j++;
@@ -314,5 +334,8 @@ namespace FilmsApplication.Controllers
                 }
             }
         }
-    }
+
+
+
+    }  
 }

@@ -6,9 +6,11 @@
 
 <h1>List of countries</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if (User.IsInRole("admin"))
+{
+    <p>
+        <a asp-action="Create">Create New</a>
+</p>}
 <table class="table">
     <thead>
         <tr>
@@ -19,39 +21,54 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.CountryName)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.CountryId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.CountryId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.CountryId">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CountryName)
+                </td>
+                @if (User.IsInRole("admin"))
+                {
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.CountryId">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.CountryId">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.CountryId">Delete</a>
+                </td>}
+                else
+                {
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.CountryId">Details</a>
+                    </td>
+                }
+            </tr>
+        }
     </tbody>
 </table>
 
-<div>
-    <h3>Import *.xlsx | *.xls file</h3>
-    @using (Html.BeginForm("Import", "Countries", FormMethod.Post, new { enctype = "multipart/form-data", id = "frm-excel" }))
-    {
-        <div>
-            Import *xlsx file:
-            <input type="file" name="fileExcel" id="fileExcel" />
+@if (User.IsInRole("admin"))
+{
+    <div>
+        @using (Html.BeginForm("Import", "Countries", FormMethod.Post, new { enctype = "multipart/form-data", id = "frm-excel" }))
+        {
             <div>
-                <input type="submit" value="Upload" />
+                Import *xlsx file:
+                <input type="file" name="fileExcel" id="fileExcel" />
+                <br>
+                @if (@ViewBag.importSucces != 0)
+                {
+                    <p>@ViewBag.importSuccess</p>
+                }
+                <div>
+                    <input type="submit" value="Upload" />
+                </div>
             </div>
-        </div>
-    }
-</div>
+        }
+    </div>
 
 <div>
-    <h3>Export to *xlsx</h3>
+    Export to *xlsx:
     <a asp-action="Export">Export</a>
-</div>
+</div>}
 
 <hr />
 

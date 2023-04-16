@@ -6,9 +6,11 @@
 
 <h1>List of directors</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if (User.IsInRole("admin"))
+{
+    <p>
+        <a asp-action="Create">Create New</a>
+</p>}
 <table class="table">
     <thead>
         <tr>
@@ -36,11 +38,19 @@
             <td>
                 @Html.DisplayFor(modelItem => item.DirectorDeathDay)
             </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.DirectorId">Edit</a> |
+                @if (User.IsInRole("admin"))
+                {
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.DirectorId">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.DirectorId">Details</a> |
                 <a asp-action="Delete" asp-route-id="@item.DirectorId">Delete</a>
-            </td>
+            </td>}
+                else
+                {
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.DirectorId">Details</a>
+                    </td>
+                }
         </tr>
 }
     </tbody>

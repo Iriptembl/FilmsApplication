@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="~/FilmsApplication.styles.css" asp-append-version="true" />
 </head>
 <body>
+    @if ((User.IsInRole("user")) || (User.IsInRole("admin")))
+    {
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -34,11 +36,20 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Films" asp-action="Index">Films</a>
                         </li>
+                        @if (User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Users</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Roles" asp-action="Index">Roles</a>
+                        </li>}
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
+    }
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()

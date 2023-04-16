@@ -1,8 +1,24 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (User.Identity.IsAuthenticated)
+{
+    <p>
+        @User.Identity.Name
+    </p>
+
+    <form method="post" asp-controller="Accounts" asp-action="Logout">
+        <input type="submit" value="Log out" class="btn btn-info" />
+    </form>
+}
+else
+{
+    <h1 style="margin-top: 100px; text-align: center">Welcome</h1>
+    <div class="d-flex justify-content-center" style="gap:10px; margin-top: 80px">
+        <a asp-controller="Accounts" asp-action="Register" style="font-size: 20px;"> Registration </a>
+    </div>
+    <div class="d-flex justify-content-center" style="gap:10px; margin-top: 80px">
+        <a asp-controller="Accounts" asp-action="Login" style="font-size: 20px;"> Log in </a>
+    </div>
+}
